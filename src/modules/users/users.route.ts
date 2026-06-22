@@ -2,8 +2,6 @@
 import { usersController } from "./users.controller";
 import { prisma } from "../../lib/prisma";
 import httpStatus from "http-status";
-import {registerUser} from "./users.service";
-
 
 
 const router = Router();
