@@ -1,14 +1,17 @@
-﻿import express, { Application, Request, Response } from "express";
+﻿import express, { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
+import httpStatus from "http-status";
 import config from "./config";
 import { userRouter } from "./modules/users/users.route";
+import { authRouter } from "./modules/auth/auth.route";
+import { sendResponse } from "./utils/sendResponse";
 
 const app: Application = express();
 
 // CORS setup
 app.use(
   cors({
-    origin: config.APP_URL,
+    origin: config.app_url,
     credentials: true,
   }),
 );
@@ -23,9 +26,24 @@ app.get("/", (req: Request, res: Response) => {
 // app.post();
 
 app.use("/api/users", userRouter);
+app.use("/api/auth", authRouter);
+
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error(err);
+
+  if (err instanceof Error && err.message === "Invalid credentials") {
+    return sendResponse(res, {
+      success: false,
+      statusCode: httpStatus.UNAUTHORIZED,
+      message: "Invalid credentials. Please check your email and password.",
+    });
+  }
+
+  sendResponse(res, {
+    success: false,
+    statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+    message: "Something went wrong.",
+  });
+});
 
 export default app;
-
-
-
-
