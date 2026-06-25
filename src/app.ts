@@ -5,6 +5,7 @@ import config from "./config";
 import { userRouter } from "./modules/users/users.route";
 import { authRouter } from "./modules/auth/auth.route";
 import { sendResponse } from "./utils/sendResponse";
+import cookieParser from "cookie-parser";
 
 const app: Application = express();
 
@@ -19,6 +20,10 @@ app.use(
 // body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// cookie parser
+app.use(cookieParser());
+
+
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, World!");
 });
@@ -45,5 +50,8 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     message: "Something went wrong.",
   });
 });
+
+
+
 
 export default app;
