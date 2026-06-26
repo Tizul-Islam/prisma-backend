@@ -3,8 +3,6 @@ import httpStatus from "http-status";
 import { usersService } from "./users.service";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
-import { jwtUtils } from "../../utils/jwt";
-import config from "../../config";
 
 const createUser = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
@@ -19,28 +17,17 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getMyProfile = catchAsync(async (req: Request, res: Response) => {
-  const { accessToken } = req.cookies;
+  const user = (req as any).user;
 
-  if (!accessToken) {
+  if (!user) {
     return sendResponse(res, {
       success: false,
       statusCode: httpStatus.UNAUTHORIZED,
-      message: "Access token missing",
+      message: "Unauthorized. Please log in.",
     });
   }
 
-  const verifiedToken = jwtUtils.verifyToken(
-    accessToken,
-    config.jwt_access_secret,
-  );
-
-  if (typeof verifiedToken === "string") {
-    throw new Error(verifiedToken);
-  }
-
-  const profile = await usersService.getMyProfile(
-    (verifiedToken as any).id as string,
-  );
+  const profile = await usersService.getMyProfile(user.id);
 
   sendResponse(res, {
     success: true,
@@ -50,7 +37,20 @@ const getMyProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateMyProfile = catchAsync(async (req: Request, res: Response) => {
+  const user = (req as any).user;
+  const payload = req.body;
+  const updatedUser = await usersService.updateMyProfile(user.id, payload);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "User profile updated successfully",
+    data: { updatedUser },
+  });
+});
+
 export const usersController = {
   createUser,
   getMyProfile,
+  updateMyProfile,
 };

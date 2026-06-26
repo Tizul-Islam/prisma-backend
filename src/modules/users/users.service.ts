@@ -8,7 +8,7 @@ import { Response } from "express";
 
 
 const registerUser = async (payload: RegisterUserPayload) => {
-  const { name, email, password, profilePhoto } = payload;
+  const { name, email, password, profilePhoto, bio } = payload;
 
   const isUserExit = await prisma.user.findUnique({
     where: { email },
@@ -30,7 +30,8 @@ const registerUser = async (payload: RegisterUserPayload) => {
       password: hashedPassword,
       profile:{
         create:{
-          profilePhoto
+          profilePicture: profilePhoto,
+          bio
         }
       }
     },
@@ -64,7 +65,43 @@ const getMyProfile = async (userId : string) => {
 
 }
 
+
+const updateMyProfile = async (userId : string , payload : RegisterUserPayload) => {
+  const { name, email, password, profilePhoto,bio } = payload;
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      name,
+      email,
+      password,
+      profile: {
+        upsert: {
+          create: {
+            profilePicture: profilePhoto,
+            bio
+          },
+          update: {
+            profilePicture: profilePhoto,
+            bio
+          }
+        },
+      },
+    },
+
+    omit: {
+      password :true
+    },
+    
+    include:{
+      profile:true
+    }
+  });
+  return updatedUser;
+}
+
 export const usersService = {
   registerUser,
   getMyProfile,
+  updateMyProfile,
 }

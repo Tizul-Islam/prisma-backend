@@ -1,4 +1,4 @@
-﻿import express, { Application, Request, Response, NextFunction } from "express";
+import express, { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
 import httpStatus from "http-status";
 import config from "./config";

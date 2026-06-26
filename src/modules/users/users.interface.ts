@@ -4,4 +4,5 @@ export interface RegisterUserPayload {
   email: string;
   password: string;
   profilePhoto?: string;
+  bio?: string;
 }
