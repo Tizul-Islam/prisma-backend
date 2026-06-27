@@ -6,6 +6,10 @@ import { userRouter } from "./modules/users/users.route";
 import { authRouter } from "./modules/auth/auth.route";
 import { sendResponse } from "./utils/sendResponse";
 import cookieParser from "cookie-parser";
+import { commentRoutes } from "./modules/comments/comments.route";
+import { postRoutes } from "./modules/post/post.route";
+import { AppError } from "./errors/AppError";
+
 
 const app: Application = express();
 
@@ -32,6 +36,8 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/comments", commentRoutes);
+app.use("/api/posts", postRoutes);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error(err);
