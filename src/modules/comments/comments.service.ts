@@ -1,6 +1,6 @@
-import { CommentStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import { ICreateCommentPayload, IUpdateCommentPayload, IModerateCommentPayload } from "./comments.interface";
+import { Role } from "../../../generated/prisma/enums";
 
 const createComment = async (payload: ICreateCommentPayload, authorId: string) => {
   const post = await prisma.post.findUnique({
@@ -16,21 +16,21 @@ const createComment = async (payload: ICreateCommentPayload, authorId: string) =
       content: payload.content,
       postId: payload.postId,
       authorId,
-      status: CommentStatus.APPROVED, // Defaults to APPROVED
+      status: "APPROVED", // Default to APPROVED as per the rules
     },
   });
 
   return comment;
 };
 
-const getCommentByAuthorId = async (authorId: string) => {
+const getCommentsByAuthor = async (authorId: string) => {
   const comments = await prisma.comment.findMany({
     where: { authorId },
   });
   return comments;
 };
 
-const getCommentByCommentId = async (commentId: string) => {
+const getCommentById = async (commentId: string) => {
   const comment = await prisma.comment.findUnique({
     where: { id: commentId },
     include: {
@@ -53,7 +53,7 @@ const getCommentByCommentId = async (commentId: string) => {
 const updateComment = async (
   commentId: string,
   payload: IUpdateCommentPayload,
-  authorId: string,
+  user: any,
 ) => {
   const comment = await prisma.comment.findUnique({
     where: { id: commentId },
@@ -63,7 +63,7 @@ const updateComment = async (
     throw new Error("Comment not found");
   }
 
-  if (comment.authorId !== authorId) {
+  if (comment.authorId !== user.id) {
     throw new Error("You do not have permission to update this comment");
   }
 
@@ -77,7 +77,7 @@ const updateComment = async (
   return updatedComment;
 };
 
-const deleteComment = async (commentId: string, authorId: string) => {
+const deleteComment = async (commentId: string, user: any) => {
   const comment = await prisma.comment.findUnique({
     where: { id: commentId },
   });
@@ -86,7 +86,7 @@ const deleteComment = async (commentId: string, authorId: string) => {
     throw new Error("Comment not found");
   }
 
-  if (comment.authorId !== authorId) {
+  if (comment.authorId !== user.id) {
     throw new Error("You do not have permission to delete this comment");
   }
 
@@ -100,7 +100,12 @@ const deleteComment = async (commentId: string, authorId: string) => {
 const moderateComment = async (
   commentId: string,
   payload: IModerateCommentPayload,
+  user: any,
 ) => {
+  if (user.role !== Role.ADMIN) {
+    throw new Error("Only admins can moderate comments");
+  }
+
   const comment = await prisma.comment.findUnique({
     where: { id: commentId },
   });
@@ -119,10 +124,10 @@ const moderateComment = async (
   return updatedComment;
 };
 
-export const commentService = {
+export const commentsService = {
   createComment,
-  getCommentByAuthorId,
-  getCommentByCommentId,
+  getCommentsByAuthor,
+  getCommentById,
   updateComment,
   deleteComment,
   moderateComment,

@@ -2,11 +2,11 @@ import { Request, Response } from "express";
 import httpStatus from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
-import { commentService } from "./comments.service";
+import { commentsService } from "./comments.service";
 
 const createComment = catchAsync(async (req: Request, res: Response) => {
   const user = (req as any).user;
-  const comment = await commentService.createComment(req.body, user.id);
+  const comment = await commentsService.createComment(req.body, user.id);
 
   sendResponse(res, {
     success: true,
@@ -17,7 +17,7 @@ const createComment = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getCommentByAuthorId = catchAsync(async (req: Request, res: Response) => {
-  const comments = await commentService.getCommentByAuthorId(
+  const comments = await commentsService.getCommentsByAuthor(
     req.params.authorId as string,
   );
 
@@ -30,7 +30,7 @@ const getCommentByAuthorId = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getCommentByCommentId = catchAsync(async (req: Request, res: Response) => {
-  const comment = await commentService.getCommentByCommentId(
+  const comment = await commentsService.getCommentById(
     req.params.commentId as string,
   );
 
@@ -44,7 +44,7 @@ const getCommentByCommentId = catchAsync(async (req: Request, res: Response) => 
 
 const updateComment = catchAsync(async (req: Request, res: Response) => {
   const user = (req as any).user;
-  const comment = await commentService.updateComment(
+  const comment = await commentsService.updateComment(
     req.params.commentId as string,
     req.body,
     user.id,
@@ -60,7 +60,7 @@ const updateComment = catchAsync(async (req: Request, res: Response) => {
 
 const deleteComment = catchAsync(async (req: Request, res: Response) => {
   const user = (req as any).user;
-  const result = await commentService.deleteComment(
+  const result = await commentsService.deleteComment(
     req.params.commentId as string,
     user.id,
   );
@@ -74,9 +74,11 @@ const deleteComment = catchAsync(async (req: Request, res: Response) => {
 });
 
 const moderateComment = catchAsync(async (req: Request, res: Response) => {
-  const comment = await commentService.moderateComment(
+  const user = (req as any).user;
+  const comment = await commentsService.moderateComment(
     req.params.commentId as string,
     req.body,
+    user,
   );
 
   sendResponse(res, {

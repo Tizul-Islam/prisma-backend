@@ -14,7 +14,7 @@ const createPost = catchAsync(async (req: Request, res: Response) => {
     message: "Post created successfully",
     data: post,
   });
-});
+});  
 
 const getAllPosts = catchAsync(async (req: Request, res: Response) => {
   const result = await postService.getAllPosts(req.query as any);
@@ -41,15 +41,14 @@ const getPostById = catchAsync(async (req: Request, res: Response) => {
 
 const getMyPosts = catchAsync(async (req: Request, res: Response) => {
   const user = (req as any).user;
-  const result = await postService.getMyPosts(user.id, req.query as any);
+  const result = await postService.getMyPosts(user.id);
 
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: "My posts retrieved successfully",
-    data: result.data,
-    pagination: result.pagination,
-  } as any);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "My Posts retrieved successfuly",
+        data: result
+    })
 });
 
 const updatePost = catchAsync(async (req: Request, res: Response) => {

@@ -13,18 +13,20 @@ const loginUser = catchAsync(async (req: Request, res: Response, next: NextFunct
   const payload = req.body;
   const {accessToken, refreshToken} = await authService.loginUser(payload);
 
+  const isProduction = process.env.NODE_ENV === "production";
+
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: true,
-    sameSite: "none",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 15 * 60 * 1000, // 15 minutes
   });
 
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: true,
-    sameSite: "none",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 1000 * 60 * 60 , // 1 days
   });
 
@@ -43,19 +45,21 @@ const refreshToken = catchAsync(async (req: Request, res: Response, next: NextFu
 
   const {accessToken, refreshToken : newRefreshToken} = await authService.refreshToken(refreshToken); 
  
-res.cookie("refreshToken", newRefreshToken, {
+  const isProduction = process.env.NODE_ENV === "production";
+
+  res.cookie("refreshToken", newRefreshToken, {
     httpOnly: true,
-    secure: true,
-    sameSite: "none",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 1000 * 60 * 60 , // 1 days
   });
 
-sendResponse(res,{
-  success:true,
-  message:"Token refresh successfully",
-  statusCode:httpStatus.OK,
-  data:{accessToken}
-})
+  sendResponse(res,{
+    success:true,
+    message:"Token refresh successfully",
+    statusCode:httpStatus.OK,
+    data:{accessToken}
+  })
 
 });
 
