@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import httpStatus from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
@@ -51,21 +51,25 @@ const getMyPosts = catchAsync(async (req: Request, res: Response) => {
     })
 });
 
-const updatePost = catchAsync(async (req: Request, res: Response) => {
-  const user = (req as any).user;
-  const post = await postService.updatePost(
-    req.params.postId as string,
-    req.body,
-    user,
-  );
+const updatePost = catchAsync(async (req : Request, res : Response, next : NextFunction) => {
+    const isAdmin = req.user?.role === "ADMIN";
+    const postId = req.params.postId;
 
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: "Post updated successfully",
-    data: post,
-  });
-});
+    if (!postId) {
+        throw new Error("Post Id Required In Params")
+    }
+
+    const payload = req.body;
+
+    const result = await postService.updatePost(postId as string, payload, isAdmin)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Post updated successfully",
+        data: result
+    })
+})
 
 const deletePost = catchAsync(async (req: Request, res: Response) => {
   const user = (req as any).user;

@@ -1,6 +1,14 @@
-import { CommentStatus, PostStatus, Role } from "../../../generated/prisma/enums";
+import {
+  CommentStatus,
+  PostStatus,
+  Role,
+} from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
-import { ICreatePostPayload, IUpdatePostPayload, IPostFilters } from "./post.interface";
+import {
+  ICreatePostPayload,
+  IUpdatePostPayload,
+  IPostFilters,
+} from "./post.interface";
 
 const createPost = async (payload: ICreatePostPayload, userId: string) => {
   const result = await prisma.post.create({
@@ -138,21 +146,20 @@ const getPostById = async (postId: string) => {
   return transactionResult;
 };
 
-const updatePost = async (postId: string, payload: IUpdatePostPayload, user: any) => {
+const updatePost = async (
+  postId: string,
+  payload: IUpdatePostPayload,
+  isAdmin: boolean,
+) => {
+  if (!isAdmin) {
+    throw new Error("Only admins can update posts!");
+  }
+
   const post = await prisma.post.findUniqueOrThrow({
     where: {
       id: postId,
     },
   });
-
-  if (user.role !== Role.ADMIN) {
-    if (post.authorId !== user.id) {
-      throw new Error("You are not the owner of this post!");
-    }
-    if (payload.isFeatured !== undefined && payload.isFeatured !== post.isFeatured) {
-      throw new Error("Regular users may not change isFeatured");
-    }
-  }
 
   const result = await prisma.post.update({
     where: {
@@ -253,31 +260,31 @@ const getPostsStats = async () => {
 
 const getMyPosts = async (authorId: string, filters: IPostFilters = {}) => {
   const result = await prisma.post.findMany({
-        where : {
-            authorId
+    where: {
+      authorId,
+    },
+
+    orderBy: {
+      createdAt: "desc",
+    },
+
+    include: {
+      comments: true,
+      author: {
+        omit: {
+          password: true,
         },
+      },
 
-        orderBy : {
-            createdAt : "desc"
+      _count: {
+        select: {
+          comments: true,
         },
+      },
+    },
+  });
 
-        include : {
-            comments : true,
-            author : {
-                omit : {
-                    password : true
-                }
-            },
-
-            _count : {
-                select : {
-                    comments : true
-                }
-            }
-        }
-    });
-
-    return result;
+  return result;
 };
 
 export const postService = {
