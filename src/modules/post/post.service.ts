@@ -104,6 +104,16 @@ const getAllPosts = async (filters: IPostFilters = {}) => {
 
 const getPostById = async (postId: string) => {
   const transactionResult = await prisma.$transaction(async (tx) => {
+    const postExists = await tx.post.findUnique({
+      where: {
+        id: postId,
+      },
+    });
+
+    if (!postExists) {
+      throw new Error("Post not found");
+    }
+
     await tx.post.update({
       where: {
         id: postId,
