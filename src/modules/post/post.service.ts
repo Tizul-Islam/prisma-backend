@@ -250,6 +250,15 @@ const getPostsStats = async () => {
         _sum: {
           views: true,
         },
+        _avg: {
+          views: true,
+        },
+        _max: {
+          views: true,
+        },
+        _min: {
+          views: true,
+        },
       }),
     ]);
 
@@ -262,6 +271,9 @@ const getPostsStats = async () => {
       totalApprovedComments,
       totalRejectedComments,
       totalPostViews: totalPostViewsAggregate._sum.views || 0,
+      averagePostViews: totalPostViewsAggregate._avg.views || 0,
+      maxPostViews: totalPostViewsAggregate._max.views || 0,
+      minPostViews: totalPostViewsAggregate._min.views || 0,
     };
   });
 
