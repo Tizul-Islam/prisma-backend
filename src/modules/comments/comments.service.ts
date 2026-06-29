@@ -38,6 +38,7 @@ const getCommentById = async (commentId: string) => {
         select: {
           id: true,
           title: true,
+          views: true
         },
       },
     },
@@ -63,7 +64,7 @@ const updateComment = async (
     throw new Error("Comment not found");
   }
 
-  if (comment.authorId !== user.id) {
+  if (user.role !== Role.ADMIN && comment.authorId !== user.id) {
     throw new Error("You do not have permission to update this comment");
   }
 
@@ -86,7 +87,7 @@ const deleteComment = async (commentId: string, user: any) => {
     throw new Error("Comment not found");
   }
 
-  if (comment.authorId !== user.id) {
+  if (user.role !== Role.ADMIN && comment.authorId !== user.id) {
     throw new Error("You do not have permission to delete this comment");
   }
 

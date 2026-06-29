@@ -47,7 +47,7 @@ const updateComment = catchAsync(async (req: Request, res: Response) => {
   const comment = await commentsService.updateComment(
     req.params.commentId as string,
     req.body,
-    user.id,
+    user,
   );
 
   sendResponse(res, {
@@ -62,7 +62,7 @@ const deleteComment = catchAsync(async (req: Request, res: Response) => {
   const user = (req as any).user;
   const result = await commentsService.deleteComment(
     req.params.commentId as string,
-    user.id,
+    user,
   );
 
   sendResponse(res, {
