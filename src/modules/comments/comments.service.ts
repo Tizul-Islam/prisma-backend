@@ -1,6 +1,6 @@
 import { prisma } from "../../lib/prisma";
 import { ICreateCommentPayload, IUpdateCommentPayload, IModerateCommentPayload } from "./comments.interface";
-import { Role } from "../../../generated/prisma/enums";
+import { Role } from "../../generated/prisma/enums";
 
 const createComment = async (payload: ICreateCommentPayload, authorId: string) => {
   const post = await prisma.post.findUnique({

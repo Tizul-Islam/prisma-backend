@@ -2,13 +2,14 @@ import {
   CommentStatus,
   PostStatus,
   Role,
-} from "../../../generated/prisma/enums";
+} from "../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import {
   ICreatePostPayload,
   IUpdatePostPayload,
   IPostFilters,
 } from "./post.interface";
+import { QueryBuilder } from "../../utils/QueryBuilder";
 
 const createPost = async (payload: ICreatePostPayload, userId: string) => {
   const result = await prisma.post.create({
@@ -22,57 +23,13 @@ const createPost = async (payload: ICreatePostPayload, userId: string) => {
 };
 
 const getAllPosts = async (filters: IPostFilters = {}) => {
-  const {
-    search,
-    tags,
-    isFeatured,
-    status,
-    authorId,
-    page = "1",
-    limit = "10",
-    sortBy = "createdAt",
-    sortOrder = "desc",
-  } = filters;
+  const queryBuilder = new QueryBuilder(filters)
+    .search(["title", "content"])
+    .filter()
+    .sort("createdAt", "desc")
+    .paginate();
 
-  const pageNum = Math.max(1, parseInt(page));
-  const limitNum = Math.max(1, parseInt(limit));
-  const skip = (pageNum - 1) * limitNum;
-
-  const where: any = {};
-
-  if (search) {
-    where.OR = [
-      { title: { contains: search, mode: "insensitive" } },
-      { content: { contains: search, mode: "insensitive" } },
-    ];
-  }
-
-  if (tags) {
-    const tagsArray = Array.isArray(tags) ? tags : tags.split(",");
-    where.tags = {
-      hasSome: tagsArray,
-    };
-  }
-
-  if (isFeatured !== undefined) {
-    where.isFeatured = String(isFeatured) === "true";
-  }
-
-  if (status) {
-    where.status = status;
-  }
-
-  if (authorId) {
-    where.authorId = authorId;
-  }
-
-  const posts = await prisma.post.findMany({
-    where,
-    skip,
-    take: limitNum,
-    orderBy: {
-      [sortBy]: sortOrder,
-    },
+  const result = await queryBuilder.execute(prisma.post, {
     include: {
       author: {
         omit: {
@@ -88,18 +45,7 @@ const getAllPosts = async (filters: IPostFilters = {}) => {
     },
   });
 
-  const total = await prisma.post.count({ where });
-  const totalPages = Math.ceil(total / limitNum);
-
-  return {
-    data: posts,
-    pagination: {
-      total,
-      page: pageNum,
-      limit: limitNum,
-      totalPages,
-    },
-  };
+  return result;
 };
 
 const getPostById = async (postId: string) => {

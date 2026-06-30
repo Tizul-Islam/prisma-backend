@@ -23,9 +23,9 @@ const getAllPosts = catchAsync(async (req: Request, res: Response) => {
     success: true,
     statusCode: httpStatus.OK,
     message: "Posts retrieved successfully",
+    meta: result.meta,
     data: result.data,
-    pagination: result.pagination,
-  } as any);
+  });
 });
 
 const getPostById = catchAsync(async (req: Request, res: Response) => {
