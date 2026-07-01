@@ -8,6 +8,8 @@ import { userRouter } from "./modules/users/users.route";
 import { authRouter } from "./modules/auth/auth.route";
 import { postRoutes } from "./modules/post/post.route";
 import { commentRoutes } from "./modules/comments/comments.route";
+import { notFound } from "./middlewares/notFound";
+import { globalErrorHandler } from "./middlewares/GlobalErrorHandler";
 
 const app: Application = express();
 
@@ -32,41 +34,11 @@ app.use("/api/auth", authRouter);
 app.use("/api/posts", postRoutes);
 app.use("/api/comments", commentRoutes);
 
+
+// Not Found Handler
+app.use(notFound);
+
 // Global Error Handler
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  let statusCode = err.statusCode || httpStatus.INTERNAL_SERVER_ERROR;
-  let message = err.message || "Something went wrong.";
-
-  if (
-    message.includes("not logged in") ||
-    message.includes("jwt") ||
-    message.includes("token") ||
-    message.includes("credentials")
-  ) {
-    statusCode = httpStatus.UNAUTHORIZED;
-  } else if (
-    message.includes("Forbidden") ||
-    message.includes("blocked") ||
-    message.includes("permission") ||
-    message.includes("owner")
-  ) {
-    statusCode = httpStatus.FORBIDDEN;
-  } else if (message.includes("not found")) {
-    statusCode = httpStatus.NOT_FOUND;
-  } else if (message.includes("already exists")) {
-    statusCode = httpStatus.CONFLICT;
-  }
-
-  // Only log internal server errors (500) to the console to keep terminal logs clean
-  if (statusCode === httpStatus.INTERNAL_SERVER_ERROR) {
-    console.error(err);
-  }
-
-  sendResponse(res, {
-    success: false,
-    statusCode,
-    message,
-  });
-});
+app.use(globalErrorHandler);
 
 export default app;

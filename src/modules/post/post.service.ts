@@ -23,8 +23,22 @@ const createPost = async (payload: ICreatePostPayload, userId: string) => {
 };
 
 const getAllPosts = async (filters: IPostFilters = {}) => {
-  const queryBuilder = new QueryBuilder(filters)
-    .search(["title", "content"])
+  const allowedFields = [
+    "id",
+    "title",
+    "content",
+    "thumbnail",
+    "isFeatured",
+    "status",
+    "tags",
+    "views",
+    "authorId",
+    "createdAt",
+    "updatedAt",
+  ];
+
+  const queryBuilder = new QueryBuilder(filters, allowedFields)
+    .search(["title", "content", "tags"])
     .filter()
     .sort("createdAt", "desc")
     .paginate();
